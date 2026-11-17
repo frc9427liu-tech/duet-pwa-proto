@@ -1,0 +1,19 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#0b1d3a"><title>Duet 能力檢查</title>
+<style>body{font-family:system-ui;background:#0b1d3a;color:#fff;margin:0;padding:20px}button{font-size:18px;padding:12px 18px;margin:6px 0;border-radius:12px;border:0;background:#4f8cff;color:#fff}li{margin:8px 0}pre{white-space:pre-wrap}</style></head><body>
+<h2>Duet 能力檢查 v1</h2><p>把結果截圖給 KaiBot2。</p><ul id="r"></ul>
+<button id="b1">🎤 測語音辨識(說一句話)</button><div id="sp"></div>
+<button id="b2">🔔 測網頁推播權限</button><div id="pu"></div>
+<button id="b3">💾 測離線儲存</button><div id="st"></div>
+<script>
+const r=document.getElementById('r');function add(t,ok){r.innerHTML+='<li>'+(ok?'✅':'❌')+' '+t+'</li>'}
+add('UA: '+navigator.userAgent.slice(0,80),true);
+add('已加到主畫面(standalone): '+(navigator.standalone||matchMedia('(display-mode: standalone)').matches),(navigator.standalone||matchMedia('(display-mode: standalone)').matches));
+add('Service Worker 支援',!!navigator.serviceWorker);add('Push API 支援',('PushManager' in window));add('Notification 支援',('Notification' in window));
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;add('Web Speech 辨識支援',!!SR);
+add('錄音 MediaRecorder 支援',!!window.MediaRecorder);
+if(navigator.serviceWorker)navigator.serviceWorker.register('sw.js').then(()=>add('SW 註冊成功',true)).catch(e=>add('SW 註冊失敗 '+e,false));
+b1.onclick=()=>{if(!SR){sp.textContent='不支援';return}const x=new SR();x.lang='zh-TW';x.onresult=e=>sp.textContent='聽到:'+e.results[0][0].transcript;x.onerror=e=>sp.textContent='錯誤:'+e.error;x.start();sp.textContent='請說話…'};
+b2.onclick=async()=>{try{const p=await Notification.requestPermission();pu.textContent='權限:'+p;if(p==='granted'){const reg=await navigator.serviceWorker.ready;reg.showNotification('Duet 測試',{body:'收到代表本機通知可用'});}}catch(e){pu.textContent='失敗:'+e}};
+b3.onclick=()=>{try{localStorage.t=Date.now();st.textContent='localStorage OK '+localStorage.t}catch(e){st.textContent='失敗'+e}};
+</script></body></html>
